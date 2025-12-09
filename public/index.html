@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Discord Avatar Tool</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
@@ -174,16 +175,19 @@
   <div class="header">
     <h1>Avatar Fetcher</h1>
     <p>Enter a User ID to grab their profile.</p>
+    <img id="guide-img" src="guide.png" alt="Guide" style="max-width: 100%; height: auto; margin-top: 1rem; border-radius: 4px;">
   </div>
 
-  <div class="input-group">
-    <input type="text" id="userId" placeholder="e.g. 123456789012345678" autocomplete="off">
-  </div>
+  <form id="searchForm">
+    <div class="input-group">
+      <input type="text" id="userId" name="discordId" placeholder="e.g. 123456789012345678" autocomplete="on">
+    </div>
 
-  <button id="fetchBtn">
-    <span class="btn-text">Get Profile</span>
-    <div class="spinner" id="spinner"></div>
-  </button>
+    <button type="submit" id="fetchBtn">
+      <span class="btn-text">Get Profile Picture</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+  </form>
 
   <div class="credit">
     Created by: <a href="https://karims.dev/" target="_blank">Karim Antar</a>
@@ -203,6 +207,7 @@
       <div class="full-view-container">
         <div class="label">Full Resolution</div>
         <img id="avatarFull" class="full-img" src="" alt="Full Avatar">
+        <button id="downloadBtn" style="margin-top: 15px;">Download</button>
       </div>
 
     </div>
@@ -210,6 +215,7 @@
 </div>
 
 <script>
+  const searchForm = document.getElementById('searchForm');
   const fetchBtn = document.getElementById('fetchBtn');
   const userIdInput = document.getElementById('userId');
   const resultCard = document.getElementById('resultCard');
@@ -219,6 +225,8 @@
   const avatarSmall = document.getElementById('avatarSmall');
   const avatarFull = document.getElementById('avatarFull');
   const usernameDisplay = document.getElementById('usernameDisplay');
+  const guideImg = document.getElementById('guide-img');
+  const downloadBtn = document.getElementById('downloadBtn');
 
   const setLoading = (isLoading) => {
     fetchBtn.disabled = isLoading;
@@ -238,12 +246,14 @@
     errorDiv.style.display = 'block';
   };
 
-  fetchBtn.addEventListener('click', async () => {
+  searchForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const id = userIdInput.value.trim();
     if (!/^\d+$/.test(id)) {
       showError('Please enter a valid numeric User ID.');
       return;
     }
+    if (guideImg) guideImg.style.display = 'none';
     setLoading(true);
     try {
       const res = await fetch(`/api/avatar/${id}`);
@@ -275,9 +285,31 @@
     }
   });
 
-  userIdInput.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') fetchBtn.click();
+  userIdInput.addEventListener('input', () => {
     if (errorDiv.style.display === 'block') errorDiv.style.display = 'none';
+  });
+
+  downloadBtn.addEventListener('click', async () => {
+    const url = avatarFull.src;
+    if (!url) return;
+
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      // Extract filename
+      const filename = url.split('/').pop().split('?')[0] || 'avatar.png';
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Download failed', err);
+      window.open(url, '_blank');
+    }
   });
 </script>
 </body>
