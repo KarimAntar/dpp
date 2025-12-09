@@ -173,6 +173,57 @@
 
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Modal Styles */
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.85); 
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s;
+  }
+
+  .modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  #avatarFull {
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -226,6 +277,12 @@
   </div>
 </div>
 
+<!-- The Modal -->
+<div id="imageModal" class="modal">
+  <span class="close">&times;</span>
+  <img class="modal-content" id="img01">
+</div>
+
 <script>
   const searchForm = document.getElementById('searchForm');
   const fetchBtn = document.getElementById('fetchBtn');
@@ -239,6 +296,9 @@
   const usernameDisplay = document.getElementById('usernameDisplay');
   const guideImg = document.getElementById('guide-img');
   const downloadBtn = document.getElementById('downloadBtn');
+  const modal = document.getElementById('imageModal');
+  const modalImg = document.getElementById('img01');
+  const closeSpan = document.querySelector('.close');
 
   const setLoading = (isLoading) => {
     fetchBtn.disabled = isLoading;
@@ -321,6 +381,30 @@
     } catch (err) {
       console.error('Download failed', err);
       window.open(url, '_blank');
+    }
+  });
+
+  // Modal Logic
+  avatarFull.addEventListener('click', () => {
+    if (avatarFull.src) {
+      modal.style.display = "block";
+      modalImg.src = avatarFull.src;
+    }
+  });
+
+  closeSpan.onclick = function() { 
+    modal.style.display = "none";
+  }
+
+  modal.onclick = function(event) {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape" && modal.style.display === "block") {
+      modal.style.display = "none";
     }
   });
 </script>
